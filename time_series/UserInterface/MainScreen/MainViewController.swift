@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import CoreData
 
 class MainViewController: NSViewController {
     @IBOutlet weak var timeSeriesTabel: NSTableView!
@@ -55,10 +56,76 @@ class MainViewController: NSViewController {
     
     func openAndRead(filePath: URL) {
         do {
-        let content = try String(contentsOf: filePath)
-            print(content)
+            let content = try String(contentsOf: filePath)
+            let elements = content.components(separatedBy: "\n")
+            var arrayOfDoubleValue = Array<Double>()
+            elements.forEach {
+                var elem = $0
+                if elem.last == "\r" {
+                    _ = elem.removeLast()
+                }
+                arrayOfDoubleValue.append(Double(elem) ?? 0.0)
+            }
+            let isWriteToDB = writeToCoreData(elements: arrayOfDoubleValue)
+            if isWriteToDB {
+                timeSeriesTabel.reloadData()
+            }
         } catch {
             let answer = AlertHelper().dialogCancel(question: "Sopmething went wrong!", text: "You choose incorect file or choose noone.")
+        }
+    }
+    
+    func writeToCoreData(elements: Array<Double>) -> Bool {
+        self.deleteAllRecords()
+        
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        
+        let context = appDelegate.persistentContainer.viewContext
+        
+        let entity = NSEntityDescription.entity(forEntityName: "Element", in: context)
+        var isWrite = false
+        
+        elements.forEach {
+            let newElement = NSManagedObject(entity: entity!, insertInto: context)
+            newElement.setValue($0, forKey: "value")
+            
+            do {
+                try context.save()
+                isWrite = true
+            } catch {
+                print("Failed saving")
+            }
+        }
+        return isWrite
+    }
+    
+    func deleteAllRecords() {
+        let delegate = NSApplication.shared.delegate as! AppDelegate
+        let context = delegate.persistentContainer.viewContext
+        
+        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Element")
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+        
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print ("There was an error")
+        }
+    }
+    
+    func getAllRecords() -> [Element] {
+        let delegate = NSApplication.shared.delegate as! AppDelegate
+        let context = delegate.persistentContainer.viewContext
+        
+        let employeesFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Element")
+        
+        do {
+            let fetchedElements = try context.fetch(employeesFetch)
+            return fetchedElements as! [Element]
+        } catch {
+            print ("Failed to fetch employees: \(error)")
+            return []
         }
     }
 }
@@ -66,7 +133,8 @@ class MainViewController: NSViewController {
 extension MainViewController: NSTableViewDataSource {
     
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return 3
+        let numberOfRows:Int = getAllRecords().count
+        return numberOfRows
     }
     
 }
@@ -74,45 +142,28 @@ extension MainViewController: NSTableViewDataSource {
 extension MainViewController: NSTableViewDelegate {
     
     fileprivate enum CellIdentifiers {
-        static let NameCell = "NameCellID"
-        static let DateCell = "DateCellID"
-        static let SizeCell = "SizeCellID"
+        static let IndexCell = "IndexID"
+        static let ValueCell = "ValueID"
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let elements = getAllRecords()
+
+        var text: String = ""
+        var cellIdentifier: String = ""
         
-//        var image: NSImage?
-//        var text: String = ""
-//        var cellIdentifier: String = ""
-//
-//        let dateFormatter = DateFormatter()
-//        dateFormatter.dateStyle = .long
-//        dateFormatter.timeStyle = .long
-//
-//        // 1
-//        guard let item = directoryItems?[row] else {
-//            return nil
-//        }
-//
-//        // 2
-//        if tableColumn == tableView.tableColumns[0] {
-//            image = item.icon
-//            text = item.name
-//            cellIdentifier = CellIdentifiers.NameCell
-//        } else if tableColumn == tableView.tableColumns[1] {
-//            text = dateFormatter.string(from: item.date)
-//            cellIdentifier = CellIdentifiers.DateCell
-//        } else if tableColumn == tableView.tableColumns[2] {
-//            text = item.isFolder ? "--" : sizeFormatter.string(fromByteCount: item.size)
-//            cellIdentifier = CellIdentifiers.SizeCell
-//        }
-//
-//        // 3
-//        if let cell = tableView.make(withIdentifier: cellIdentifier, owner: nil) as? NSTableCellView {
-//            cell.textField?.stringValue = text
-//            cell.imageView?.image = image ?? nil
-//            return cell
-//        }
+        if tableColumn == tableView.tableColumns[0] {
+            text = "\(row)"
+            cellIdentifier = CellIdentifiers.IndexCell
+        } else if tableColumn == tableView.tableColumns[1] {
+            text = "\(elements[row].value)"
+            cellIdentifier = CellIdentifiers.ValueCell
+        }
+        
+        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+            cell.textField?.stringValue = text
+            return cell
+        }
         return nil
     }
     
