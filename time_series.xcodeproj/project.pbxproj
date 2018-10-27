@@ -12,6 +12,7 @@
 		8EEC01652182403500636334 /* time_series.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8EEC01632182403500636334 /* time_series.xcdatamodeld */; };
 		8EEC01672182403600636334 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8EEC01662182403600636334 /* Assets.xcassets */; };
 		8EEC016A2182403600636334 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EEC01682182403600636334 /* Main.storyboard */; };
+		8EFAC3CA2184EE9200B5336B /* AlertHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EFAC3C92184EE9200B5336B /* AlertHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		8EEC01692182403600636334 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		8EEC016B2182403600636334 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8EEC016C2182403600636334 /* time_series.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = time_series.entitlements; sourceTree = "<group>"; };
+		8EFAC3C92184EE9200B5336B /* AlertHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,15 +57,56 @@
 		8EEC015E2182403500636334 /* time_series */ = {
 			isa = PBXGroup;
 			children = (
-				8EEC015F2182403500636334 /* AppDelegate.swift */,
-				8EEC01612182403500636334 /* MainViewController.swift */,
-				8EEC01662182403600636334 /* Assets.xcassets */,
-				8EEC01682182403600636334 /* Main.storyboard */,
+				8EFAC3CE2184F15F00B5336B /* Resources */,
+				8EFAC3CD2184F15300B5336B /* App */,
+				8EFAC3CB2184F11300B5336B /* UserInterface */,
+				8EFAC3C82184EE7900B5336B /* Util */,
 				8EEC016B2182403600636334 /* Info.plist */,
 				8EEC016C2182403600636334 /* time_series.entitlements */,
 				8EEC01632182403500636334 /* time_series.xcdatamodeld */,
 			);
 			path = time_series;
+			sourceTree = "<group>";
+		};
+		8EFAC3C82184EE7900B5336B /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				8EFAC3C92184EE9200B5336B /* AlertHelper.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+		8EFAC3CB2184F11300B5336B /* UserInterface */ = {
+			isa = PBXGroup;
+			children = (
+				8EFAC3CC2184F12B00B5336B /* MainScreen */,
+			);
+			path = UserInterface;
+			sourceTree = "<group>";
+		};
+		8EFAC3CC2184F12B00B5336B /* MainScreen */ = {
+			isa = PBXGroup;
+			children = (
+				8EEC01682182403600636334 /* Main.storyboard */,
+				8EEC01612182403500636334 /* MainViewController.swift */,
+			);
+			path = MainScreen;
+			sourceTree = "<group>";
+		};
+		8EFAC3CD2184F15300B5336B /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8EEC015F2182403500636334 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		8EFAC3CE2184F15F00B5336B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8EEC01662182403600636334 /* Assets.xcassets */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,6 +179,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8EFAC3CA2184EE9200B5336B /* AlertHelper.swift in Sources */,
 				8EEC01622182403500636334 /* MainViewController.swift in Sources */,
 				8EEC01652182403500636334 /* time_series.xcdatamodeld in Sources */,
 				8EEC01602182403500636334 /* AppDelegate.swift in Sources */,

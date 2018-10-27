@@ -12,6 +12,9 @@ class MainViewController: NSViewController {
     @IBOutlet weak var timeSeriesTabel: NSTableView!
     @IBOutlet weak var labelSelectedMenuItem: NSTextField!
     
+    let path = "/Users/gmary/Desktop/"
+    var filename_field: String!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -25,11 +28,39 @@ class MainViewController: NSViewController {
     }
     
     @IBAction func openFile(_ sender: NSMenuItem) {
-            print("ViewController:actionMenuItemSelected")
-            labelSelectedMenuItem.stringValue = "Selected menu item: " + sender.title
-        timeSeriesTabel.backgroundColor = .blue
+        let dialog = NSOpenPanel();
+        
+        dialog.title                   = "Choose a file";
+        dialog.showsResizeIndicator    = true;
+        dialog.showsHiddenFiles        = false;
+        dialog.canChooseDirectories    = true;
+        dialog.canCreateDirectories    = true;
+        dialog.allowsMultipleSelection = false;
+        dialog.allowedFileTypes        = ["dat", "txt", "dbf"];
+        
+        if (dialog.runModal() == NSApplication.ModalResponse.OK) {
+            let result = dialog.url // Pathname of the file
+            
+            if (result != nil) {
+                let path = result!.path
+                filename_field = path
+                openAndRead(filePath: result!)
+            }
+        } else {
+            // User clicked on "Cancel"
+            return
+        }
     }
 
+    
+    func openAndRead(filePath: URL) {
+        do {
+        let content = try String(contentsOf: filePath)
+            print(content)
+        } catch {
+            let answer = AlertHelper().dialogCancel(question: "Sopmething went wrong!", text: "You choose incorect file or choose noone.")
+        }
+    }
 }
 
 extension MainViewController: NSTableViewDataSource {
