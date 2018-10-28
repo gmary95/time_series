@@ -16,15 +16,14 @@ class MainViewController: NSViewController {
     
     let path = "/Users/gmary/Desktop/"
     var filename_field: String!
+    var dao: ElementsDAO!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        representChart()
-    }
-    
-    override open func viewWillAppear()
-    {
-        self.timeSeriesRepresentationChart.animate(xAxisDuration: 0.0, yAxisDuration: 1.0)
+        
+        self.timeSeriesRepresentationChart.noDataTextColor = .white
+        
+        self.dao = ElementsDAO()
     }
     
     @IBAction func openFile(_ sender: NSMenuItem) {
@@ -52,27 +51,23 @@ class MainViewController: NSViewController {
         }
     }
 
-    func representChart(){
+    func representChart(timeSeries: Array<Double>){
         // Do any additional setup after loading the view.
-        let ys1 = Array(1..<10).map { x in return sin(Double(x) / 2.0 / 3.141 * 1.5) }
-        let ys2 = Array(1..<10).map { x in return cos(Double(x) / 2.0 / 3.141) }
-        
-        let yse1 = ys1.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
-        let yse2 = ys2.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
+        let series = timeSeries.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
         
         let data = LineChartData()
-        let ds1 = LineChartDataSet(values: yse1, label: "Hello")
-        ds1.colors = [NSUIColor.red]
-        data.addDataSet(ds1)
+        let dataSet = LineChartDataSet(values: series, label: "Current time series")
+        dataSet.colors = [NSUIColor.yellow]
+        dataSet.valueColors = [NSUIColor.white]
+        data.addDataSet(dataSet)
         
-        let ds2 = LineChartDataSet(values: yse2, label: "World")
-        ds2.colors = [NSUIColor.blue]
-        data.addDataSet(ds2)
         self.timeSeriesRepresentationChart.data = data
         
-        self.timeSeriesRepresentationChart.gridBackgroundColor = NSUIColor.white
-        
-        self.timeSeriesRepresentationChart.chartDescription?.text = "Linechart Demo"
+        self.timeSeriesRepresentationChart.gridBackgroundColor = .red
+        self.timeSeriesRepresentationChart.legend.textColor = .white
+        self.timeSeriesRepresentationChart.xAxis.labelTextColor = .white
+        self.timeSeriesRepresentationChart.leftAxis.labelTextColor = .white
+        self.timeSeriesRepresentationChart.rightAxis.labelTextColor = .white
     }
     
     func openAndRead(filePath: URL) {
@@ -85,10 +80,13 @@ class MainViewController: NSViewController {
                 if elem.last == "\r" {
                     _ = elem.removeLast()
                 }
-                arrayOfDoubleValue.append(Double(elem) ?? 0.0)
+                if let value = Double(elem) {
+                    arrayOfDoubleValue.append(value)
+                }
             }
-            let isWriteToDB = writeToCoreData(elements: arrayOfDoubleValue)
+            let isWriteToDB = dao.writeToCoreData(elements: arrayOfDoubleValue)
             if isWriteToDB {
+                representChart(timeSeries: arrayOfDoubleValue)
                 timeSeriesTabel.reloadData()
             }
         } catch {
@@ -96,65 +94,16 @@ class MainViewController: NSViewController {
         }
     }
     
-    func writeToCoreData(elements: Array<Double>) -> Bool {
-        self.deleteAllRecords()
-        
-        let appDelegate = NSApplication.shared.delegate as! AppDelegate
-        
-        let context = appDelegate.persistentContainer.viewContext
-        
-        let entity = NSEntityDescription.entity(forEntityName: "Element", in: context)
-        var isWrite = false
-        
-        elements.forEach {
-            let newElement = NSManagedObject(entity: entity!, insertInto: context)
-            newElement.setValue($0, forKey: "value")
-            
-            do {
-                try context.save()
-                isWrite = true
-            } catch {
-                print("Failed saving")
-            }
-        }
-        return isWrite
+    @IBAction func exit(_ sender: NSMenuItem) {
+        NSApplication.shared.terminate(self)
     }
-    
-    func deleteAllRecords() {
-        let delegate = NSApplication.shared.delegate as! AppDelegate
-        let context = delegate.persistentContainer.viewContext
-        
-        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Element")
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
-        
-        do {
-            try context.execute(deleteRequest)
-            try context.save()
-        } catch {
-            print ("There was an error")
-        }
-    }
-    
-    func getAllRecords() -> [Element] {
-        let delegate = NSApplication.shared.delegate as! AppDelegate
-        let context = delegate.persistentContainer.viewContext
-        
-        let employeesFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Element")
-        
-        do {
-            let fetchedElements = try context.fetch(employeesFetch)
-            return fetchedElements as! [Element]
-        } catch {
-            print ("Failed to fetch employees: \(error)")
-            return []
-        }
-    }
+   
 }
 
 extension MainViewController: NSTableViewDataSource {
     
     func numberOfRows(in tableView: NSTableView) -> Int {
-        let numberOfRows:Int = getAllRecords().count
+        let numberOfRows:Int = dao.getAllRecords().count
         return numberOfRows
     }
     
@@ -168,7 +117,7 @@ extension MainViewController: NSTableViewDelegate {
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let elements = getAllRecords()
+        let elements = dao.getAllRecords()
 
         var text: String = ""
         var cellIdentifier: String = ""

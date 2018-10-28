@@ -49,7 +49,7 @@
                                         <menuItem isSeparatorItem="YES" id="kCx-OE-vgT"/>
                                         <menuItem title="Quit time_series" keyEquivalent="q" id="4sb-4s-VLi">
                                             <connections>
-                                                <action selector="terminate:" target="Ady-hI-5gd" id="Te7-pn-YzF"/>
+                                                <action selector="exit:" target="Ady-hI-5gd" id="H4E-ls-cqI"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -81,7 +81,7 @@
                                         <menuItem isSeparatorItem="YES" id="m54-Is-iLE"/>
                                         <menuItem title="Close" keyEquivalent="w" id="DVo-aG-piG">
                                             <connections>
-                                                <action selector="performClose:" target="Ady-hI-5gd" id="HmO-Ls-i7Q"/>
+                                                <action selector="exit:" target="Ady-hI-5gd" id="1kh-w6-D3g"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem title="Save…" keyEquivalent="s" id="pxx-59-PXV">
@@ -696,7 +696,7 @@
                     </connections>
                 </windowController>
             </objects>
-            <point key="canvasLocation" x="195" y="247"/>
+            <point key="canvasLocation" x="195" y="250"/>
         </scene>
         <!--Main View Controller-->
         <scene sceneID="hIz-AP-VOD">
