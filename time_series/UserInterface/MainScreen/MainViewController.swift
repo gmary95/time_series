@@ -8,24 +8,23 @@
 
 import Cocoa
 import CoreData
+import Charts
 
 class MainViewController: NSViewController {
     @IBOutlet weak var timeSeriesTabel: NSTableView!
-    @IBOutlet weak var labelSelectedMenuItem: NSTextField!
+    @IBOutlet weak var timeSeriesRepresentationChart: LineChartView!
     
     let path = "/Users/gmary/Desktop/"
     var filename_field: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        representChart()
     }
-
-    override var representedObject: Any? {
-        didSet {
-        // Update the view, if already loaded.
-        }
+    
+    override open func viewWillAppear()
+    {
+        self.timeSeriesRepresentationChart.animate(xAxisDuration: 0.0, yAxisDuration: 1.0)
     }
     
     @IBAction func openFile(_ sender: NSMenuItem) {
@@ -53,6 +52,28 @@ class MainViewController: NSViewController {
         }
     }
 
+    func representChart(){
+        // Do any additional setup after loading the view.
+        let ys1 = Array(1..<10).map { x in return sin(Double(x) / 2.0 / 3.141 * 1.5) }
+        let ys2 = Array(1..<10).map { x in return cos(Double(x) / 2.0 / 3.141) }
+        
+        let yse1 = ys1.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
+        let yse2 = ys2.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
+        
+        let data = LineChartData()
+        let ds1 = LineChartDataSet(values: yse1, label: "Hello")
+        ds1.colors = [NSUIColor.red]
+        data.addDataSet(ds1)
+        
+        let ds2 = LineChartDataSet(values: yse2, label: "World")
+        ds2.colors = [NSUIColor.blue]
+        data.addDataSet(ds2)
+        self.timeSeriesRepresentationChart.data = data
+        
+        self.timeSeriesRepresentationChart.gridBackgroundColor = NSUIColor.white
+        
+        self.timeSeriesRepresentationChart.chartDescription?.text = "Linechart Demo"
+    }
     
     func openAndRead(filePath: URL) {
         do {

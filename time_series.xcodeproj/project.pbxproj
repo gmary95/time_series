@@ -13,9 +13,25 @@
 		8EEC01672182403600636334 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8EEC01662182403600636334 /* Assets.xcassets */; };
 		8EEC016A2182403600636334 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EEC01682182403600636334 /* Main.storyboard */; };
 		8EFAC3CA2184EE9200B5336B /* AlertHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EFAC3C92184EE9200B5336B /* AlertHelper.swift */; };
+		D68BC2328FBE9237DF8C5590 /* Pods_time_series.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99905313C6BC37F9108D03CD /* Pods_time_series.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		8E7484722186245000365952 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		02C652D9A7B7E0C452EEBCDD /* Pods-time_series.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-time_series.release.xcconfig"; path = "Pods/Target Support Files/Pods-time_series/Pods-time_series.release.xcconfig"; sourceTree = "<group>"; };
+		3E39C91FCF31229EE5398238 /* Pods-time_series.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-time_series.debug.xcconfig"; path = "Pods/Target Support Files/Pods-time_series/Pods-time_series.debug.xcconfig"; sourceTree = "<group>"; };
 		8EEC015C2182403500636334 /* time_series.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = time_series.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EEC015F2182403500636334 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8EEC01612182403500636334 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -25,6 +41,7 @@
 		8EEC016B2182403600636334 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8EEC016C2182403600636334 /* time_series.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = time_series.entitlements; sourceTree = "<group>"; };
 		8EFAC3C92184EE9200B5336B /* AlertHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertHelper.swift; sourceTree = "<group>"; };
+		99905313C6BC37F9108D03CD /* Pods_time_series.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_time_series.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,17 +49,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D68BC2328FBE9237DF8C5590 /* Pods_time_series.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		04F69DF8F8767CCB195D4BC8 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				3E39C91FCF31229EE5398238 /* Pods-time_series.debug.xcconfig */,
+				02C652D9A7B7E0C452EEBCDD /* Pods-time_series.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		4935251B1CA271251CE726A6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				99905313C6BC37F9108D03CD /* Pods_time_series.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		8EEC01532182403500636334 = {
 			isa = PBXGroup;
 			children = (
 				8EEC015E2182403500636334 /* time_series */,
 				8EEC015D2182403500636334 /* Products */,
+				04F69DF8F8767CCB195D4BC8 /* Pods */,
+				4935251B1CA271251CE726A6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -124,9 +161,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8EEC016F2182403600636334 /* Build configuration list for PBXNativeTarget "time_series" */;
 			buildPhases = (
+				BD37202C9CF1093B9F3EED28 /* [CP] Check Pods Manifest.lock */,
 				8EEC01582182403500636334 /* Sources */,
 				8EEC01592182403500636334 /* Frameworks */,
 				8EEC015A2182403500636334 /* Resources */,
+				8E7484722186245000365952 /* Embed Frameworks */,
+				A681E577CCB8EFB205E4DC8F /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -181,6 +221,53 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A681E577CCB8EFB205E4DC8F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-time_series/Pods-time_series-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Charts/Charts.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Charts.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-time_series/Pods-time_series-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BD37202C9CF1093B9F3EED28 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-time_series-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8EEC01582182403500636334 /* Sources */ = {
@@ -325,11 +412,16 @@
 		};
 		8EEC01702182403600636334 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3E39C91FCF31229EE5398238 /* Pods-time_series.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = time_series/time_series.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = time_series/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -343,11 +435,16 @@
 		};
 		8EEC01712182403600636334 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 02C652D9A7B7E0C452EEBCDD /* Pods-time_series.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = time_series/time_series.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = time_series/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
