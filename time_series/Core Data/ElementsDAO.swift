@@ -14,14 +14,14 @@ class ElementsDAO {
         entity = NSEntityDescription.entity(forEntityName: "Element", in: context)
     }
     
-    func writeToCoreData(elements: Array<Double>) -> Bool {
+    func writeToCoreData(elements: Dictionary<String, Double>) -> Bool {
         self.deleteAllRecords()
         
         var isWrite = false
         
         elements.forEach {
             let newElement = NSManagedObject(entity: entity!, insertInto: context)
-            newElement.setValue($0, forKey: "value")
+            newElement.setValue($0.value, forKey: "value")
             
             do {
                 try context.save()
