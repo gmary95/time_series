@@ -10,7 +10,7 @@
 		8E2E153021A212A1009ED9BB /* DarbinWatsonCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2E152F21A212A1009ED9BB /* DarbinWatsonCalculator.swift */; };
 		8E2E153221A21A8B009ED9BB /* AutoCorrManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2E153121A21A8B009ED9BB /* AutoCorrManager.swift */; };
 		8E7778722186451D00719A0C /* ElementsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E7778712186451D00719A0C /* ElementsDAO.swift */; };
-		8E777874218657ED00719A0C /* SpirmanTestCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E777873218657ED00719A0C /* SpirmanTestCalculator.swift */; };
+		8E777874218657ED00719A0C /* SpearmanTestCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E777873218657ED00719A0C /* SpearmanTestCalculator.swift */; };
 		8E77787721865A4700719A0C /* Selection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E77787621865A4700719A0C /* Selection.swift */; };
 		8E77787B21866C5B00719A0C /* Quantil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E77787A21866C5B00719A0C /* Quantil.swift */; };
 		8EA6DBA8219781A3008AFF4B /* LinearRegresion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA6DBA7219781A3008AFF4B /* LinearRegresion.swift */; };
@@ -21,6 +21,7 @@
 		8EEC01672182403600636334 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8EEC01662182403600636334 /* Assets.xcassets */; };
 		8EEC016A2182403600636334 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EEC01682182403600636334 /* Main.storyboard */; };
 		8EFAC3CA2184EE9200B5336B /* AlertHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EFAC3C92184EE9200B5336B /* AlertHelper.swift */; };
+		8EFB8A8021A9B37B008824BB /* SpearmanHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EFB8A7F21A9B37B008824BB /* SpearmanHelper.swift */; };
 		D68BC2328FBE9237DF8C5590 /* Pods_time_series.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99905313C6BC37F9108D03CD /* Pods_time_series.framework */; };
 /* End PBXBuildFile section */
 
@@ -43,7 +44,7 @@
 		8E2E152F21A212A1009ED9BB /* DarbinWatsonCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarbinWatsonCalculator.swift; sourceTree = "<group>"; };
 		8E2E153121A21A8B009ED9BB /* AutoCorrManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCorrManager.swift; sourceTree = "<group>"; };
 		8E7778712186451D00719A0C /* ElementsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementsDAO.swift; sourceTree = "<group>"; };
-		8E777873218657ED00719A0C /* SpirmanTestCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpirmanTestCalculator.swift; sourceTree = "<group>"; };
+		8E777873218657ED00719A0C /* SpearmanTestCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpearmanTestCalculator.swift; sourceTree = "<group>"; };
 		8E77787621865A4700719A0C /* Selection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Selection.swift; sourceTree = "<group>"; };
 		8E77787A21866C5B00719A0C /* Quantil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quantil.swift; sourceTree = "<group>"; };
 		8EA6DBA7219781A3008AFF4B /* LinearRegresion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinearRegresion.swift; sourceTree = "<group>"; };
@@ -57,6 +58,7 @@
 		8EEC016B2182403600636334 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8EEC016C2182403600636334 /* time_series.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = time_series.entitlements; sourceTree = "<group>"; };
 		8EFAC3C92184EE9200B5336B /* AlertHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertHelper.swift; sourceTree = "<group>"; };
+		8EFB8A7F21A9B37B008824BB /* SpearmanHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpearmanHelper.swift; sourceTree = "<group>"; };
 		99905313C6BC37F9108D03CD /* Pods_time_series.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_time_series.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -145,10 +147,11 @@
 			isa = PBXGroup;
 			children = (
 				8EFAC3C92184EE9200B5336B /* AlertHelper.swift */,
-				8E777873218657ED00719A0C /* SpirmanTestCalculator.swift */,
+				8E777873218657ED00719A0C /* SpearmanTestCalculator.swift */,
 				8EA6DBA7219781A3008AFF4B /* LinearRegresion.swift */,
 				8E2E152F21A212A1009ED9BB /* DarbinWatsonCalculator.swift */,
 				8E2E153121A21A8B009ED9BB /* AutoCorrManager.swift */,
+				8EFB8A7F21A9B37B008824BB /* SpearmanHelper.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -315,10 +318,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E2E153021A212A1009ED9BB /* DarbinWatsonCalculator.swift in Sources */,
+				8EFB8A8021A9B37B008824BB /* SpearmanHelper.swift in Sources */,
 				8E77787721865A4700719A0C /* Selection.swift in Sources */,
 				8E2E153221A21A8B009ED9BB /* AutoCorrManager.swift in Sources */,
 				8EFAC3CA2184EE9200B5336B /* AlertHelper.swift in Sources */,
-				8E777874218657ED00719A0C /* SpirmanTestCalculator.swift in Sources */,
+				8E777874218657ED00719A0C /* SpearmanTestCalculator.swift in Sources */,
 				8EA6DBAA21978B35008AFF4B /* DoubleExtension.swift in Sources */,
 				8EEC01622182403500636334 /* MainViewController.swift in Sources */,
 				8EEC01652182403500636334 /* time_series.xcdatamodeld in Sources */,

@@ -26,7 +26,7 @@ class MainViewController: NSViewController {
     var dictionaryOfTimeSeries = Dictionary<String, Double>()
     var dictionaryOfRуgresion = Dictionary<String, Double>()
     var dictionaryOfLeftovers = Dictionary<String, Double>()
-    var spirTest:SpirmanTestCalculator?
+    var spirTest:SpearmanTestCalculator?
     var linearRegresion: LinearRegresion?
     
     override func viewDidLoad() {
@@ -144,7 +144,7 @@ class MainViewController: NSViewController {
             for item in array {
                 selection.append(item: item)
             }
-            spirTest = SpirmanTestCalculator(selection: selection)
+            spirTest = SpearmanTestCalculator(selection: selection)
             spearmanTestTable.reloadData()
             
             linearRegresion = LinearRegresion(selection: selection)
