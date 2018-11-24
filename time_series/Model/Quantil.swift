@@ -78,7 +78,7 @@ class Quantil
     private static func StudentG3(up: Double) -> Double {
         var result: Double
         
-        result = (1.0 / 384.0) * ((3.0 * pow(up, 7)) + (19.0 * pow(up, 5)) + (17.0 * pow(up, 3)) - (15.0 * up));
+        result = (1.0 / 384.0) * ((3.0 * pow(up, 7)) + (19.0 * pow(up, 5)) + (17.0 * pow(up, 3)) - (15.0 * up))
         
         return result
     }
@@ -86,7 +86,7 @@ class Quantil
     private static func StudentG4(up: Double) -> Double {
         var result: Double
         
-        result = (1.0 / 92160.0) * ((79.0 * pow(up, 9)) + (779.0 * pow(up, 7)) + (1482.0 * pow(up, 5)) - (1920.0 * pow(up, 3)) - (945.0 * up));
+        result = (1.0 / 92160.0) * ((79.0 * pow(up, 9)) + (779.0 * pow(up, 7)) + (1482.0 * pow(up, 5)) - (1920.0 * pow(up, 3)) - (945.0 * up))
         
         return result
     }
