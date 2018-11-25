@@ -1,9 +1,7 @@
 class AutoCorrManager {
-     var selection: Selection
     var dw: Double
     
-    public init (selection: Selection, dw: Double) {
-        self.selection = selection
+    public init (dw: Double) {
         self.dw = dw
     }
     

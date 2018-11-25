@@ -19,6 +19,9 @@ class MainViewController: NSViewController {
     @IBOutlet weak var testRegresionTabel: NSTableView!
     @IBOutlet weak var leftoversParametersTable: NSTableView!
     @IBOutlet weak var leftoversTable: NSTableView!
+    @IBOutlet weak var autocorrTable: NSTableView!
+    @IBOutlet weak var autocorrParameterTable: NSTableView!
+    @IBOutlet weak var autocorrChart: LineChartView!
     
     let path = "/Users/gmary/Desktop/"
     let alph = 0.05
@@ -32,10 +35,14 @@ class MainViewController: NSViewController {
     var arrayOfLeftoversRegresion = Array<Double>()
     var arrayOfNewT = Array<Double>()
     var arrayOfNewSelection = Array<Double>()
+    var arrayOfNewTAuto = Array<Double>()
+    var arrayOfNewSelectionAuto = Array<Double>()
     var spirTest:SpearmanTestCalculator?
+    var dwTest: DarbinWatsonCalculator?
     var linearRegresion: LinearRegresion?
     var linearLefoversRegresion: LinearRegresion?
     var linearNewRegresion: LinearRegresion?
+    var linearNewRegresionAuto: LinearRegresion?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,7 +79,7 @@ class MainViewController: NSViewController {
         }
     }
     
-    func representChart(timeSeries: Array<Double>, regresion: Array<Double>, chart: LineChartView){
+    func representChart(timeSeries: Array<Double>, regresion: Array<Double>?, chart: LineChartView){
         // Do any additional setup after loading the view.
         let series = timeSeries.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
         
@@ -82,13 +89,15 @@ class MainViewController: NSViewController {
         dataSet.valueColors = [NSUIColor.white]
         data.addDataSet(dataSet)
         
-        let regresionSet = regresion.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
-        
-        let dataSetRegresion = LineChartDataSet(values: regresionSet, label: "Linear regresion")
-        dataSetRegresion.colors = [NSUIColor.red]
-        dataSetRegresion.valueColors = [NSUIColor.clear]
-        dataSetRegresion.drawCirclesEnabled = false
-        data.addDataSet(dataSetRegresion)
+        if let reg = regresion {
+            let regresionSet = reg.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
+            
+            let dataSetRegresion = LineChartDataSet(values: regresionSet, label: "Linear regresion")
+            dataSetRegresion.colors = [NSUIColor.red]
+            dataSetRegresion.valueColors = [NSUIColor.clear]
+            dataSetRegresion.drawCirclesEnabled = false
+            data.addDataSet(dataSetRegresion)
+        }
         
         chart.data = data
         
@@ -212,7 +221,40 @@ class MainViewController: NSViewController {
             testRegresionTabel.reloadData()
             
             spirTest = SpearmanTestCalculator(selection: selection, leftovers: arrayOfLeftovers)
+            let selectionLefovers = Selection(order: 1, capacity: 0)
+            for item in arrayOfLeftovers {
+                selectionLefovers.append(item: item)
+            }
+            dwTest = DarbinWatsonCalculator(selection: selectionLefovers)
             spearmanTestTable.reloadData()
+            
+            representChart(timeSeries: selectionLefovers.data, regresion: nil, chart: autocorrChart)
+            let a = AutoCorrManager(dw: (dwTest?.CalcDW())!).calculateAlph()
+            arrayOfNewSelectionAuto = []
+            arrayOfNewSelectionAuto.append(arrayOfTimeSeries[0])
+            elem = 0
+            for i in 1 ..< arrayOfTimeSeries.count {
+                elem = arrayOfTimeSeries[i] - (a * arrayOfTimeSeries[i - 1])
+                arrayOfNewSelectionAuto.append(elem)
+            }
+            
+            arrayOfNewTAuto = []
+            arrayOfNewTAuto.append(1)
+            elem = 0
+            for i in 1 ..< arrayOfTimeSeries.count {
+                elem = Double(i + 1) - (a * Double(i))
+                arrayOfNewTAuto.append(elem)
+            }
+            
+            let newAutoSelection = Selection(order: 1, capacity: 0)
+            for item in arrayOfNewSelectionAuto {
+                newAutoSelection.append(item: item)
+            }
+            
+            linearNewRegresionAuto = LinearRegresion(selection: newAutoSelection)
+            linearNewRegresionAuto?.initAllParam()
+            autocorrTable.reloadData()
+            autocorrParameterTable.reloadData()
         } catch {
             _ = AlertHelper().dialogCancel(question: "Sopmething went wrong!", text: "You choose incorect file or choose noone.")
         }
@@ -227,14 +269,14 @@ class MainViewController: NSViewController {
 extension MainViewController: NSTableViewDataSource {
     
     func numberOfRows(in tableView: NSTableView) -> Int {
-        if tableView == timeSeriesTabel || tableView == leftoversTable {
+        if tableView == timeSeriesTabel || tableView == leftoversTable || tableView == autocorrTable{
             let numberOfRows:Int = arrayOfTimeSeries.count
             return numberOfRows
         }
         if tableView == spearmanTestTable {
-            return 1
+            return 2
         }
-        if tableView == linearParameterTable || tableView == leftoversParametersTable || tableView == testRegresionTabel {
+        if tableView == linearParameterTable || tableView == leftoversParametersTable || tableView == testRegresionTabel || tableView == autocorrParameterTable{
             return 2
         }
         return 0
@@ -281,29 +323,51 @@ extension MainViewController: NSTableViewDelegate {
         if tableView == testRegresionTabel {
             return loadNewParameter(tableView, viewFor: tableColumn, row: row)
         }
+        if tableView == autocorrTable {
+            return loadAutocorr(tableView, viewFor: tableColumn, row: row)
+        }
+        if tableView == autocorrParameterTable {
+            return loadNewParameterAuto(tableView, viewFor: tableColumn, row: row)
+        }
         return nil
     }
     
     func loadSpearmanTest(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
         var text: String = ""
         var cellIdentifier: String = ""
-        
-        if tableColumn == tableView.tableColumns[0] {
-            if let test = spirTest?.CalcS() {
-                text = "\(test.rounded(toPlaces: 6))"
+        if row == 0 {
+            if tableColumn == tableView.tableColumns[0] {
+                if let test = spirTest?.CalcS() {
+                    text = "\(test.rounded(toPlaces: 6))"
+                }
+                cellIdentifier = CellIdentifiersSpearmanTable.ValueCell
+            } else if tableColumn == tableView.tableColumns[1] {
+                if let test = spirTest {
+                    let quantil = Quantil.StudentQuantil(p: alph / 2.0, v: Double(test.selection.count - 2))
+                    text = "\(quantil.rounded(toPlaces: 6))"
+                }
+                cellIdentifier = CellIdentifiersSpearmanTable.QuantilCell
+            } else if tableColumn == tableView.tableColumns[2] {
+                if let test = spirTest {
+                    text = (test.makeDecision(alph: alph)) ?? ""
+                }
+                cellIdentifier = CellIdentifiersSpearmanTable.ResultCell
             }
-            cellIdentifier = CellIdentifiersSpearmanTable.ValueCell
-        } else if tableColumn == tableView.tableColumns[1] {
-            if let test = spirTest {
-                let quantil = Quantil.StudentQuantil(p: alph / 2.0, v: Double(test.selection.count - 2))
-                text = "\(quantil.rounded(toPlaces: 6))"
+        } else {
+            if tableColumn == tableView.tableColumns[0] {
+                if let test = dwTest?.CalcDW() {
+                    text = "\(test.rounded(toPlaces: 6))"
+                }
+                cellIdentifier = CellIdentifiersSpearmanTable.ValueCell
+            } else if tableColumn == tableView.tableColumns[1] {
+                text = "-"
+                cellIdentifier = CellIdentifiersSpearmanTable.QuantilCell
+            } else if tableColumn == tableView.tableColumns[2] {
+                if let test = dwTest {
+                    text = (test.makeDecision())
+                }
+                cellIdentifier = CellIdentifiersSpearmanTable.ResultCell
             }
-            cellIdentifier = CellIdentifiersSpearmanTable.QuantilCell
-        } else if tableColumn == tableView.tableColumns[2] {
-            if let test = spirTest {
-                text = (spirTest?.makeDecision(alph: alph)) ?? ""
-            }
-            cellIdentifier = CellIdentifiersSpearmanTable.ResultCell
         }
         
         if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
@@ -323,10 +387,10 @@ extension MainViewController: NSTableViewDelegate {
                 text = "\(arrayOfName[row])"
                 cellIdentifier = CellIdentifiersSelectionTable.IndexCell
             } else if tableColumn == tableView.tableColumns[1] {
-                text = "\(arrayOfTimeSeries[row])"
+                text = "\(arrayOfTimeSeries[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.ValueCell
             } else if tableColumn == tableView.tableColumns[2] {
-                text = "\(arrayOfRуgresion[row])"
+                text = "\(arrayOfRуgresion[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
             }
             
@@ -349,16 +413,48 @@ extension MainViewController: NSTableViewDelegate {
                 text = "\(arrayOfName[row])"
                 cellIdentifier = CellIdentifiersSelectionTable.IndexCell
             } else if tableColumn == tableView.tableColumns[1] {
-                text = "\(pow(arrayOfLeftovers[row], 2.0))"
+                text = "\(pow(arrayOfLeftovers[row], 2.0).rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.ValueCell
             } else if tableColumn == tableView.tableColumns[2] {
-                text = "\(arrayOfLeftoversRegresion[row])"
+                text = "\(arrayOfLeftoversRegresion[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
             } else if tableColumn == tableView.tableColumns[3] {
-                text = "\(arrayOfNewSelection[row])"
+                text = "\(arrayOfNewSelection[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
             } else if tableColumn == tableView.tableColumns[4] {
-                text = "\(arrayOfNewT[row])"
+                text = "\(arrayOfNewT[row].rounded(toPlaces: 6))"
+                cellIdentifier = CellIdentifiersSelectionTable.NewTCell
+            }
+            
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+                cell.textField?.stringValue = text
+                return cell
+            }
+            
+        }
+        return nil
+    }
+    
+    func loadAutocorr(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
+        
+        if arrayOfTimeSeries.count > 0 {
+            var text: String = ""
+            var cellIdentifier: String = ""
+            
+            if tableColumn == tableView.tableColumns[0] {
+                text = "\(arrayOfName[row])"
+                cellIdentifier = CellIdentifiersSelectionTable.IndexCell
+            } else if tableColumn == tableView.tableColumns[1] {
+                text = "\(arrayOfTimeSeries[row].rounded(toPlaces: 6))"
+                cellIdentifier = CellIdentifiersSelectionTable.ValueCell
+            } else if tableColumn == tableView.tableColumns[2] {
+                text = "\(arrayOfRуgresion[row].rounded(toPlaces: 6))"
+                cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
+            } else if tableColumn == tableView.tableColumns[3] {
+                text = "\(arrayOfNewSelectionAuto[row].rounded(toPlaces: 6))"
+                cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
+            } else if tableColumn == tableView.tableColumns[4] {
+                text = "\(arrayOfNewTAuto[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.NewTCell
             }
             
@@ -423,6 +519,31 @@ extension MainViewController: NSTableViewDelegate {
     
     func loadNewParameter(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
         if let linear = linearNewRegresion {
+            var text: String = ""
+            var cellIdentifier: String = ""
+            
+            if tableColumn == tableView.tableColumns[0] {
+                switch row {
+                case 0:
+                    text = "\(linear.a!.rounded(toPlaces: 6))"
+                case 1:
+                    text = "\(linear.b!.rounded(toPlaces: 6))"
+                default: break
+                }
+                cellIdentifier = CellIdentifiersLinearTable.ValueCell
+            }
+            
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+                cell.textField?.stringValue = text
+                return cell
+            }
+            
+        }
+        return nil
+    }
+    
+    func loadNewParameterAuto(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
+        if let linear = linearNewRegresionAuto {
             var text: String = ""
             var cellIdentifier: String = ""
             
