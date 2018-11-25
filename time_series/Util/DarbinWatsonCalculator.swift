@@ -9,7 +9,7 @@ class DarbinWatsonCalculator {
     
     public func CalcSumPow() -> Double {
         var sum = 0.0
-        for i in 0 ..< selection.count - 1 {
+        for i in 0 ..< selection.count {
             sum += pow(selection[i], 2.0)
         }
         return sum

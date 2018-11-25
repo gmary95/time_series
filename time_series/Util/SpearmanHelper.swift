@@ -13,7 +13,11 @@ class SpearmanHelper {
     }
     
     public static func sum(_ values: [Double]) -> Double {
-        return values.reduce(0, +)
+        var sum = 0.0
+        for i in 0 ..< values.count {
+            sum += values[i]
+        }
+        return sum
     }
     
     public static func frequencies(_ values: [Double]) -> ([Double: Int]) {

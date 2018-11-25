@@ -16,18 +16,26 @@ class MainViewController: NSViewController {
     @IBOutlet weak var spearmanTestTable: NSTableView!
     @IBOutlet weak var linearParameterTable: NSTableView!
     @IBOutlet weak var linearLeftoversChart: LineChartView!
-    @IBOutlet weak var testRegresionTabel: NSScrollView!
+    @IBOutlet weak var testRegresionTabel: NSTableView!
+    @IBOutlet weak var leftoversParametersTable: NSTableView!
+    @IBOutlet weak var leftoversTable: NSTableView!
     
     let path = "/Users/gmary/Desktop/"
     let alph = 0.05
     
     var filename_field: String!
     var dao: ElementsDAO!
-    var dictionaryOfTimeSeries = Dictionary<String, Double>()
-    var dictionaryOfRуgresion = Dictionary<String, Double>()
-    var dictionaryOfLeftovers = Dictionary<String, Double>()
+    var arrayOfTimeSeries = Array<Double>()
+    var arrayOfName = Array<String>()
+    var arrayOfRуgresion = Array<Double>()
+    var arrayOfLeftovers = Array<Double>()
+    var arrayOfLeftoversRegresion = Array<Double>()
+    var arrayOfNewT = Array<Double>()
+    var arrayOfNewSelection = Array<Double>()
     var spirTest:SpearmanTestCalculator?
     var linearRegresion: LinearRegresion?
+    var linearLefoversRegresion: LinearRegresion?
+    var linearNewRegresion: LinearRegresion?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,6 +62,8 @@ class MainViewController: NSViewController {
             if (result != nil) {
                 let path = result!.path
                 filename_field = path
+                arrayOfTimeSeries = []
+                arrayOfName = []
                 openAndRead(filePath: result!)
             }
         } else {
@@ -62,7 +72,7 @@ class MainViewController: NSViewController {
         }
     }
     
-    func representChart(timeSeries: Array<Double>, regresion: Array<Double>){
+    func representChart(timeSeries: Array<Double>, regresion: Array<Double>, chart: LineChartView){
         // Do any additional setup after loading the view.
         let series = timeSeries.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
         
@@ -72,44 +82,41 @@ class MainViewController: NSViewController {
         dataSet.valueColors = [NSUIColor.white]
         data.addDataSet(dataSet)
         
-        //        let regresionSet = regresion.enumerated().map { (arg) -> ChartDataEntry in
-        //
-        //            let (x, y) = arg
-        //            return ChartDataEntry(x: Double(x), y: y) }
-        //
-        //        let dataSetRegresion = LineChartDataSet(values: regresionSet, label: "Linear regresion")
-        //        dataSetRegresion.colors = [NSUIColor.red]
-        //        dataSetRegresion.valueColors = [NSUIColor.clear]
-        //        dataSetRegresion.drawCirclesEnabled = false
-        //        data.addDataSet(dataSetRegresion)
+        let regresionSet = regresion.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: y) }
         
-        self.timeSeriesRepresentationChart.data = data
+        let dataSetRegresion = LineChartDataSet(values: regresionSet, label: "Linear regresion")
+        dataSetRegresion.colors = [NSUIColor.red]
+        dataSetRegresion.valueColors = [NSUIColor.clear]
+        dataSetRegresion.drawCirclesEnabled = false
+        data.addDataSet(dataSetRegresion)
         
-        self.timeSeriesRepresentationChart.gridBackgroundColor = .red
-        self.timeSeriesRepresentationChart.legend.textColor = .white
-        self.timeSeriesRepresentationChart.xAxis.labelTextColor = .white
-        self.timeSeriesRepresentationChart.leftAxis.labelTextColor = .white
-        self.timeSeriesRepresentationChart.rightAxis.labelTextColor = .white
+        chart.data = data
+        
+        chart.gridBackgroundColor = .red
+        chart.legend.textColor = .white
+        chart.xAxis.labelTextColor = .white
+        chart.leftAxis.labelTextColor = .white
+        chart.rightAxis.labelTextColor = .white
     }
     
-    func representLefovers(leftover: Array<Double>){
-        // Do any additional setup after loading the view.
-        let leftoverSeries = leftover.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: pow(y, 2.0)) }
-        
-        let data = LineChartData()
-        let dataSet = LineChartDataSet(values: leftoverSeries, label: "Leftover")
-        dataSet.colors = [NSUIColor.yellow]
-        dataSet.valueColors = [NSUIColor.white]
-        data.addDataSet(dataSet)
-        
-        self.linearLeftoversChart.data = data
-        
-        self.linearLeftoversChart.gridBackgroundColor = .red
-        self.linearLeftoversChart.legend.textColor = .white
-        self.linearLeftoversChart.xAxis.labelTextColor = .white
-        self.linearLeftoversChart.leftAxis.labelTextColor = .white
-        self.linearLeftoversChart.rightAxis.labelTextColor = .white
-    }
+    //    func representLefovers(leftover: Array<Double>){
+    //        // Do any additional setup after loading the view.
+    //        let leftoverSeries = leftover.enumerated().map { x, y in return ChartDataEntry(x: Double(x), y: pow(y, 2.0)) }
+    //
+    //        let data = LineChartData()
+    //        let dataSet = LineChartDataSet(values: leftoverSeries, label: "Leftover")
+    //        dataSet.colors = [NSUIColor.yellow]
+    //        dataSet.valueColors = [NSUIColor.white]
+    //        data.addDataSet(dataSet)
+    //
+    //        self.linearLeftoversChart.data = data
+    //
+    //        self.linearLeftoversChart.gridBackgroundColor = .red
+    //        self.linearLeftoversChart.legend.textColor = .white
+    //        self.linearLeftoversChart.xAxis.labelTextColor = .white
+    //        self.linearLeftoversChart.leftAxis.labelTextColor = .white
+    //        self.linearLeftoversChart.rightAxis.labelTextColor = .white
+    //    }
     
     func dictionaryToArray(dictionary: Dictionary<String, Double>) -> Array<Double> {
         let array = Array(dictionary.values)
@@ -128,7 +135,8 @@ class MainViewController: NSViewController {
                     _ = elem.removeLast()
                 }
                 if let value = Double(elem) {
-                    dictionaryOfTimeSeries["\(i)"] = value
+                    arrayOfTimeSeries.append(value)
+                    arrayOfName.append("\(i)")
                 }
                 //                var elem = $0//.components(separatedBy: ",")
                 ////                elements.remove(at: 0)
@@ -137,35 +145,74 @@ class MainViewController: NSViewController {
                 //                    dictionaryOfTimeSeries["\(i)"] = value
                 //                }
             }
-            let array = dictionaryToArray(dictionary: dictionaryOfTimeSeries)
-            timeSeriesTabel.reloadData()
             
             let selection = Selection(order: 1, capacity: 0)
-            for item in array {
+            for item in arrayOfTimeSeries {
                 selection.append(item: item)
             }
-            spirTest = SpearmanTestCalculator(selection: selection)
-            spearmanTestTable.reloadData()
             
             linearRegresion = LinearRegresion(selection: selection)
             linearRegresion?.initAllParam()
-            dictionaryOfRуgresion = [:]
-            i = 0
-            dictionaryOfTimeSeries.forEach {
-                i += 1
-                dictionaryOfRуgresion[$0.key] = linearRegresion!.a! + linearRegresion!.b! * Double(i)
+            arrayOfRуgresion = []
+            var elem = 0.0
+            for i in 0 ..< arrayOfTimeSeries.count {
+                elem = linearRegresion!.a! + (linearRegresion!.b! * Double(i + 1))
+                arrayOfRуgresion.append(elem)
             }
             linearParameterTable.reloadData()
-            let regresion = dictionaryToArray(dictionary: dictionaryOfRуgresion)
             
-            representChart(timeSeries: array, regresion: regresion)
+            representChart(timeSeries: arrayOfTimeSeries, regresion: arrayOfRуgresion, chart: timeSeriesRepresentationChart)
+            timeSeriesTabel.reloadData()
             
-            dictionaryOfLeftovers = [:]
-            dictionaryOfTimeSeries.forEach {
-                dictionaryOfLeftovers[$0.key] = $0.value - dictionaryOfRуgresion[$0.key]!
+            arrayOfLeftovers = []
+            elem = 0
+            for i in 0 ..< arrayOfTimeSeries.count {
+                elem = abs(arrayOfTimeSeries[i] - arrayOfRуgresion[i])
+                arrayOfLeftovers.append(elem)
             }
-            let leftovers = dictionaryToArray(dictionary: dictionaryOfLeftovers)
-            representLefovers(leftover: leftovers)
+            
+            let selectionLefoversPow = Selection(order: 1, capacity: 0)
+            for item in arrayOfLeftovers {
+                selectionLefoversPow.append(item: item * item)
+            }
+            
+            linearLefoversRegresion = LinearRegresion(selection: selectionLefoversPow)
+            linearLefoversRegresion?.initAllParam()
+            arrayOfLeftoversRegresion = []
+            elem = 0.0
+            for i in 0 ..< arrayOfLeftovers.count {
+                elem = linearLefoversRegresion!.a! + (linearLefoversRegresion!.b! * Double(i + 1))
+                arrayOfLeftoversRegresion.append(elem)
+            }
+            leftoversParametersTable.reloadData()
+            representChart(timeSeries: selectionLefoversPow.data, regresion: arrayOfLeftoversRegresion, chart: linearLeftoversChart)
+            
+            arrayOfNewSelection = []
+            elem = 0
+            for i in 0 ..< arrayOfTimeSeries.count {
+                elem = arrayOfTimeSeries[i] / arrayOfLeftoversRegresion[i]
+                arrayOfNewSelection.append(elem)
+            }
+            
+            arrayOfNewT = []
+            elem = 0
+            for i in 0 ..< arrayOfTimeSeries.count {
+                elem = Double(i + 1) / arrayOfLeftoversRegresion[i]
+                arrayOfNewT.append(elem)
+            }
+            
+            let newSelection = Selection(order: 1, capacity: 0)
+            for item in arrayOfNewSelection {
+                newSelection.append(item: item)
+            }
+            
+            linearNewRegresion = LinearRegresion(selection: newSelection)
+            linearNewRegresion?.initAllParam()
+            leftoversTable.reloadData()
+            testRegresionTabel.reloadData()
+            
+            spirTest = SpearmanTestCalculator(selection: selection, leftovers: arrayOfLeftovers)
+            spearmanTestTable.reloadData()
         } catch {
             _ = AlertHelper().dialogCancel(question: "Sopmething went wrong!", text: "You choose incorect file or choose noone.")
         }
@@ -180,14 +227,14 @@ class MainViewController: NSViewController {
 extension MainViewController: NSTableViewDataSource {
     
     func numberOfRows(in tableView: NSTableView) -> Int {
-        if tableView == timeSeriesTabel {
-            let numberOfRows:Int = dictionaryOfTimeSeries.count
+        if tableView == timeSeriesTabel || tableView == leftoversTable {
+            let numberOfRows:Int = arrayOfTimeSeries.count
             return numberOfRows
         }
         if tableView == spearmanTestTable {
             return 1
         }
-        if tableView == linearParameterTable {
+        if tableView == linearParameterTable || tableView == leftoversParametersTable || tableView == testRegresionTabel {
             return 2
         }
         return 0
@@ -200,6 +247,9 @@ extension MainViewController: NSTableViewDelegate {
     fileprivate enum CellIdentifiersSelectionTable {
         static let IndexCell = "IndexID"
         static let ValueCell = "ValueID"
+        static let RegressionCell = "RegressionID"
+        static let NewTCell = "NewTID"
+        static let NewValueCell = "NewValueID"
     }
     
     fileprivate enum CellIdentifiersSpearmanTable {
@@ -216,11 +266,20 @@ extension MainViewController: NSTableViewDelegate {
         if tableView == timeSeriesTabel {
             return loadSelection(tableView, viewFor: tableColumn, row: row)
         }
+        if tableView == leftoversTable {
+            return loadLeftovers(tableView, viewFor: tableColumn, row: row)
+        }
         if tableView == spearmanTestTable {
             return loadSpearmanTest(tableView, viewFor: tableColumn, row: row)
         }
         if tableView == linearParameterTable {
             return loadParameter(tableView, viewFor: tableColumn, row: row)
+        }
+        if tableView == leftoversParametersTable {
+            return loadParameterLeftovers(tableView, viewFor: tableColumn, row: row)
+        }
+        if tableView == testRegresionTabel {
+            return loadNewParameter(tableView, viewFor: tableColumn, row: row)
         }
         return nil
     }
@@ -230,7 +289,7 @@ extension MainViewController: NSTableViewDelegate {
         var cellIdentifier: String = ""
         
         if tableColumn == tableView.tableColumns[0] {
-            if let test = spirTest?.CalcRC() {
+            if let test = spirTest?.CalcS() {
                 text = "\(test.rounded(toPlaces: 6))"
             }
             cellIdentifier = CellIdentifiersSpearmanTable.ValueCell
@@ -255,18 +314,52 @@ extension MainViewController: NSTableViewDelegate {
     }
     
     func loadSelection(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
-        let elements = dictionaryOfTimeSeries
         
-        if elements.count > 0 {
+        if arrayOfTimeSeries.count > 0 {
             var text: String = ""
             var cellIdentifier: String = ""
             
             if tableColumn == tableView.tableColumns[0] {
-                text = "\(Array(elements.keys)[row])"
+                text = "\(arrayOfName[row])"
                 cellIdentifier = CellIdentifiersSelectionTable.IndexCell
             } else if tableColumn == tableView.tableColumns[1] {
-                text = "\(Array(elements.values)[row])"
+                text = "\(arrayOfTimeSeries[row])"
                 cellIdentifier = CellIdentifiersSelectionTable.ValueCell
+            } else if tableColumn == tableView.tableColumns[2] {
+                text = "\(arrayOfRуgresion[row])"
+                cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
+            }
+            
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+                cell.textField?.stringValue = text
+                return cell
+            }
+            
+        }
+        return nil
+    }
+    
+    func loadLeftovers(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
+        
+        if arrayOfLeftovers.count > 0 {
+            var text: String = ""
+            var cellIdentifier: String = ""
+            
+            if tableColumn == tableView.tableColumns[0] {
+                text = "\(arrayOfName[row])"
+                cellIdentifier = CellIdentifiersSelectionTable.IndexCell
+            } else if tableColumn == tableView.tableColumns[1] {
+                text = "\(pow(arrayOfLeftovers[row], 2.0))"
+                cellIdentifier = CellIdentifiersSelectionTable.ValueCell
+            } else if tableColumn == tableView.tableColumns[2] {
+                text = "\(arrayOfLeftoversRegresion[row])"
+                cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
+            } else if tableColumn == tableView.tableColumns[3] {
+                text = "\(arrayOfNewSelection[row])"
+                cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
+            } else if tableColumn == tableView.tableColumns[4] {
+                text = "\(arrayOfNewT[row])"
+                cellIdentifier = CellIdentifiersSelectionTable.NewTCell
             }
             
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
@@ -280,6 +373,56 @@ extension MainViewController: NSTableViewDelegate {
     
     func loadParameter(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
         if let linear = linearRegresion {
+            var text: String = ""
+            var cellIdentifier: String = ""
+            
+            if tableColumn == tableView.tableColumns[0] {
+                switch row {
+                case 0:
+                    text = "\(linear.a!.rounded(toPlaces: 6))"
+                case 1:
+                    text = "\(linear.b!.rounded(toPlaces: 6))"
+                default: break
+                }
+                cellIdentifier = CellIdentifiersLinearTable.ValueCell
+            }
+            
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+                cell.textField?.stringValue = text
+                return cell
+            }
+            
+        }
+        return nil
+    }
+    
+    func loadParameterLeftovers(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
+        if let linear = linearLefoversRegresion {
+            var text: String = ""
+            var cellIdentifier: String = ""
+            
+            if tableColumn == tableView.tableColumns[0] {
+                switch row {
+                case 0:
+                    text = "\(linear.a!.rounded(toPlaces: 6))"
+                case 1:
+                    text = "\(linear.b!.rounded(toPlaces: 6))"
+                default: break
+                }
+                cellIdentifier = CellIdentifiersLinearTable.ValueCell
+            }
+            
+            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+                cell.textField?.stringValue = text
+                return cell
+            }
+            
+        }
+        return nil
+    }
+    
+    func loadNewParameter(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSTableCellView? {
+        if let linear = linearNewRegresion {
             var text: String = ""
             var cellIdentifier: String = ""
             
