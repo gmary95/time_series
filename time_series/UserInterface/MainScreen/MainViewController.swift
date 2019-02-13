@@ -24,13 +24,13 @@ class MainViewController: NSViewController {
     @IBOutlet weak var autocorrChart: LineChartView!
     
     let path = "/Users/gmary/Desktop/"
-    let alph = 0.05
+    let alph = 0.4
     
     var filename_field: String!
     var dao: ElementsDAO!
     var arrayOfTimeSeries = Array<Double>()
     var arrayOfName = Array<String>()
-    var arrayOfRуgresion = Array<Double>()
+    var arrayOfRegresion = Array<Double>()
     var arrayOfLeftovers = Array<Double>()
     var arrayOfLeftoversRegresion = Array<Double>()
     var arrayOfNewT = Array<Double>()
@@ -43,11 +43,21 @@ class MainViewController: NSViewController {
     var linearLefoversRegresion: LinearRegresion?
     var linearNewRegresion: LinearRegresion?
     var linearNewRegresionAuto: LinearRegresion?
+    var selectionLefovers = Selection(order: 1, capacity: 0)
+    var selectionLefoversPow = Selection(order: 1, capacity: 0)
+    var selection = Selection(order: 1, capacity: 0)
+    var newSelection = Selection(order: 1, capacity: 0)
+    var newAutoSelection = Selection(order: 1, capacity: 0)
+    
+    var isHomoskedastic = false
+    var isAutocorrelation = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.timeSeriesRepresentationChart.noDataTextColor = .white
+        self.linearLeftoversChart.noDataTextColor = .white
+        self.autocorrChart.noDataTextColor = .white
         
         self.dao = ElementsDAO()
     }
@@ -136,123 +146,71 @@ class MainViewController: NSViewController {
         do {
             let content = try String(contentsOf: filePath)
             var elements = content.components(separatedBy: "\n")
-            var i = 0
+//            var i = 0
+            elements.remove(at: 0)
             elements.forEach {
-                i += 1
-                var elem = $0
-                if elem.last == "\r" {
-                    _ = elem.removeLast()
-                }
-                if let value = Double(elem) {
-                    arrayOfTimeSeries.append(value)
-                    arrayOfName.append("\(i)")
-                }
-                //                var elem = $0//.components(separatedBy: ",")
-                ////                elements.remove(at: 0)
+//                i += 1
+//                var elem = $0
+//                if elem.last == "\r" {
+//                    _ = elem.removeLast()
+//                }
+//                if let value = Double(elem) {
+//                    arrayOfTimeSeries.append(value)
+//                    arrayOfName.append("\(i)")
+//                }
+                let elem = $0.components(separatedBy: ",")
                 
-                //                if let value = Double(elem/*.last ?? ""), let key = elem.first*/)  {
-                //                    dictionaryOfTimeSeries["\(i)"] = value
-                //                }
+                if let value = Double(elem.last ?? ""), let key = elem.first  {
+                    arrayOfTimeSeries.append(value)
+                    arrayOfName.append("\(key)")
+                }
             }
             
-            let selection = Selection(order: 1, capacity: 0)
+            selection = Selection(order: 1, capacity: 0)
             for item in arrayOfTimeSeries {
                 selection.append(item: item)
             }
             
             linearRegresion = LinearRegresion(selection: selection)
             linearRegresion?.initAllParam()
-            arrayOfRуgresion = []
+            arrayOfRegresion = []
             var elem = 0.0
             for i in 0 ..< arrayOfTimeSeries.count {
                 elem = linearRegresion!.a! + (linearRegresion!.b! * Double(i + 1))
-                arrayOfRуgresion.append(elem)
+                arrayOfRegresion.append(elem)
             }
             linearParameterTable.reloadData()
             
-            representChart(timeSeries: arrayOfTimeSeries, regresion: arrayOfRуgresion, chart: timeSeriesRepresentationChart)
+            representChart(timeSeries: arrayOfTimeSeries, regresion: arrayOfRegresion, chart: timeSeriesRepresentationChart)
             timeSeriesTabel.reloadData()
             
-            arrayOfLeftovers = []
-            elem = 0
-            for i in 0 ..< arrayOfTimeSeries.count {
-                elem = abs(arrayOfTimeSeries[i] - arrayOfRуgresion[i])
-                arrayOfLeftovers.append(elem)
-            }
+            calcLeftovers()
             
-            let selectionLefoversPow = Selection(order: 1, capacity: 0)
-            for item in arrayOfLeftovers {
-                selectionLefoversPow.append(item: item * item)
-            }
+            calcHaracteristics()
+            let (_, isHomo) = (spirTest?.makeDecision(alph: alph))!
+            isHomoskedastic = isHomo
             
-            linearLefoversRegresion = LinearRegresion(selection: selectionLefoversPow)
-            linearLefoversRegresion?.initAllParam()
-            arrayOfLeftoversRegresion = []
-            elem = 0.0
-            for i in 0 ..< arrayOfLeftovers.count {
-                elem = linearLefoversRegresion!.a! + (linearLefoversRegresion!.b! * Double(i + 1))
-                arrayOfLeftoversRegresion.append(elem)
-            }
-            leftoversParametersTable.reloadData()
-            representChart(timeSeries: selectionLefoversPow.data, regresion: arrayOfLeftoversRegresion, chart: linearLeftoversChart)
+            let (_, isAuto) = (dwTest?.makeDecision())!
+            isAutocorrelation = isAuto
+            spearmanTestTable.reloadData()
             
-            arrayOfNewSelection = []
-            elem = 0
-            for i in 0 ..< arrayOfTimeSeries.count {
-                elem = arrayOfTimeSeries[i] / arrayOfLeftoversRegresion[i]
-                arrayOfNewSelection.append(elem)
+            if !isHomoskedastic {
+                removeHeteroscedastic()
+            } else {
+                arrayOfNewSelection = []
+                arrayOfNewT = []
             }
-            
-            arrayOfNewT = []
-            elem = 0
-            for i in 0 ..< arrayOfTimeSeries.count {
-                elem = Double(i + 1) / arrayOfLeftoversRegresion[i]
-                arrayOfNewT.append(elem)
-            }
-            
-            let newSelection = Selection(order: 1, capacity: 0)
-            for item in arrayOfNewSelection {
-                newSelection.append(item: item)
-            }
-            
-            linearNewRegresion = LinearRegresion(selection: newSelection)
-            linearNewRegresion?.initAllParam()
             leftoversTable.reloadData()
             testRegresionTabel.reloadData()
             
-            spirTest = SpearmanTestCalculator(selection: selection, leftovers: arrayOfLeftovers)
-            let selectionLefovers = Selection(order: 1, capacity: 0)
-            for item in arrayOfLeftovers {
-                selectionLefovers.append(item: item)
-            }
-            dwTest = DarbinWatsonCalculator(selection: selectionLefovers)
-            spearmanTestTable.reloadData()
-            
             representChart(timeSeries: selectionLefovers.data, regresion: nil, chart: autocorrChart)
-            let a = AutoCorrManager(dw: (dwTest?.CalcDW())!).calculateAlph()
-            arrayOfNewSelectionAuto = []
-            arrayOfNewSelectionAuto.append(arrayOfTimeSeries[0])
-            elem = 0
-            for i in 1 ..< arrayOfTimeSeries.count {
-                elem = arrayOfTimeSeries[i] - (a * arrayOfTimeSeries[i - 1])
-                arrayOfNewSelectionAuto.append(elem)
-            }
             
-            arrayOfNewTAuto = []
-            arrayOfNewTAuto.append(1)
-            elem = 0
-            for i in 1 ..< arrayOfTimeSeries.count {
-                elem = Double(i + 1) - (a * Double(i))
-                arrayOfNewTAuto.append(elem)
+            if isAutocorrelation {
+                deleteAutocorr()
+            } else {
+                arrayOfNewSelectionAuto = []
+                arrayOfNewTAuto = []
             }
-            
-            let newAutoSelection = Selection(order: 1, capacity: 0)
-            for item in arrayOfNewSelectionAuto {
-                newAutoSelection.append(item: item)
-            }
-            
-            linearNewRegresionAuto = LinearRegresion(selection: newAutoSelection)
-            linearNewRegresionAuto?.initAllParam()
             autocorrTable.reloadData()
             autocorrParameterTable.reloadData()
         } catch {
@@ -264,6 +222,90 @@ class MainViewController: NSViewController {
         NSApplication.shared.terminate(self)
     }
     
+    func calcHaracteristics() {
+        spirTest = SpearmanTestCalculator(selection: selection, leftovers: arrayOfLeftovers)
+        selectionLefovers = Selection(order: 1, capacity: 0)
+        for item in arrayOfLeftovers {
+            selectionLefovers.append(item: item)
+        }
+        dwTest = DarbinWatsonCalculator(selection: selectionLefovers)
+    }
+    
+    func calcLeftovers() {
+        arrayOfLeftovers = []
+        var elem = 0.0
+        for i in 0 ..< arrayOfTimeSeries.count {
+            elem = abs(arrayOfTimeSeries[i] - arrayOfRegresion[i])
+            arrayOfLeftovers.append(elem)
+        }
+        
+        selectionLefoversPow = Selection(order: 1, capacity: 0)
+        for item in arrayOfLeftovers {
+            selectionLefoversPow.append(item: item * item)
+        }
+        
+        linearLefoversRegresion = LinearRegresion(selection: selectionLefoversPow)
+        linearLefoversRegresion?.initAllParam()
+        arrayOfLeftoversRegresion = []
+        elem = 0.0
+        for i in 0 ..< arrayOfLeftovers.count {
+            elem = linearLefoversRegresion!.a! + (linearLefoversRegresion!.b! * Double(i + 1))
+            arrayOfLeftoversRegresion.append(elem)
+        }
+        leftoversParametersTable.reloadData()
+        representChart(timeSeries: selectionLefoversPow.data, regresion: arrayOfLeftoversRegresion, chart: linearLeftoversChart)
+    }
+    
+    func removeHeteroscedastic() {
+        arrayOfNewSelection = []
+        var elem = 0.0
+        for i in 0 ..< arrayOfTimeSeries.count {
+            elem = arrayOfTimeSeries[i] / arrayOfLeftoversRegresion[i]
+            arrayOfNewSelection.append(elem)
+        }
+        
+        arrayOfNewT = []
+        elem = 0.0
+        for i in 0 ..< arrayOfTimeSeries.count {
+            elem = Double(i + 1) / arrayOfLeftoversRegresion[i]
+            arrayOfNewT.append(elem)
+        }
+        
+        newSelection = Selection(order: 1, capacity: 0)
+        for item in arrayOfNewSelection {
+            newSelection.append(item: item)
+        }
+        
+        linearNewRegresion = LinearRegresion(selection: newSelection)
+        linearNewRegresion?.initAllParam()
+    }
+    
+    func deleteAutocorr() {
+        let a = AutoCorrManager(dw: (dwTest?.CalcDW())!).calculateAlph()
+        arrayOfNewSelectionAuto = []
+        arrayOfNewSelectionAuto.append(arrayOfTimeSeries[0])
+        var elem = 0.0
+        for i in 1 ..< arrayOfTimeSeries.count {
+            elem = arrayOfTimeSeries[i] - (a * arrayOfTimeSeries[i - 1])
+            arrayOfNewSelectionAuto.append(elem)
+        }
+        
+        arrayOfNewTAuto = []
+        arrayOfNewTAuto.append(1)
+        elem = 0.0
+        for i in 1 ..< arrayOfTimeSeries.count {
+            elem = Double(i + 1) - (a * Double(i))
+            arrayOfNewTAuto.append(elem)
+        }
+        
+        newAutoSelection = Selection(order: 1, capacity: 0)
+        for item in arrayOfNewSelectionAuto {
+            newAutoSelection.append(item: item)
+        }
+        
+        linearNewRegresionAuto = LinearRegresion(selection: newAutoSelection)
+        linearNewRegresionAuto?.initAllParam()
+    }
 }
 
 extension MainViewController: NSTableViewDataSource {
@@ -349,7 +391,7 @@ extension MainViewController: NSTableViewDelegate {
                 cellIdentifier = CellIdentifiersSpearmanTable.QuantilCell
             } else if tableColumn == tableView.tableColumns[2] {
                 if let test = spirTest {
-                    text = (test.makeDecision(alph: alph)) ?? ""
+                    text = (test.makeDecision(alph: alph).0) ?? ""
                 }
                 cellIdentifier = CellIdentifiersSpearmanTable.ResultCell
             }
@@ -364,7 +406,7 @@ extension MainViewController: NSTableViewDelegate {
                 cellIdentifier = CellIdentifiersSpearmanTable.QuantilCell
             } else if tableColumn == tableView.tableColumns[2] {
                 if let test = dwTest {
-                    text = (test.makeDecision())
+                    text = (test.makeDecision().0)
                 }
                 cellIdentifier = CellIdentifiersSpearmanTable.ResultCell
             }
@@ -390,7 +432,7 @@ extension MainViewController: NSTableViewDelegate {
                 text = "\(arrayOfTimeSeries[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.ValueCell
             } else if tableColumn == tableView.tableColumns[2] {
-                text = "\(arrayOfRуgresion[row].rounded(toPlaces: 6))"
+                text = "\(arrayOfRegresion[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
             }
             
@@ -418,18 +460,22 @@ extension MainViewController: NSTableViewDelegate {
             } else if tableColumn == tableView.tableColumns[2] {
                 text = "\(arrayOfLeftoversRegresion[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
-            } else if tableColumn == tableView.tableColumns[3] {
-                text = "\(arrayOfNewSelection[row].rounded(toPlaces: 6))"
-                cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
-            } else if tableColumn == tableView.tableColumns[4] {
-                text = "\(arrayOfNewT[row].rounded(toPlaces: 6))"
-                cellIdentifier = CellIdentifiersSelectionTable.NewTCell
             }
-            
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
-                cell.textField?.stringValue = text
-                return cell
+        
+            if arrayOfNewSelection.count > 0 {
+                if tableColumn == tableView.tableColumns[3] {
+                    text = "\(arrayOfNewSelection[row].rounded(toPlaces: 6))"
+                    cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
+                } else if tableColumn == tableView.tableColumns[4] {
+                    text = "\(arrayOfNewT[row].rounded(toPlaces: 6))"
+                    cellIdentifier = CellIdentifiersSelectionTable.NewTCell
+                }
             }
+                
+                if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+                    cell.textField?.stringValue = text
+                    return cell
+                }
             
         }
         return nil
@@ -448,15 +494,27 @@ extension MainViewController: NSTableViewDelegate {
                 text = "\(arrayOfTimeSeries[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.ValueCell
             } else if tableColumn == tableView.tableColumns[2] {
-                text = "\(arrayOfRуgresion[row].rounded(toPlaces: 6))"
+                text = "\(arrayOfRegresion[row].rounded(toPlaces: 6))"
                 cellIdentifier = CellIdentifiersSelectionTable.RegressionCell
-            } else if tableColumn == tableView.tableColumns[3] {
-                text = "\(arrayOfNewSelectionAuto[row].rounded(toPlaces: 6))"
-                cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
-            } else if tableColumn == tableView.tableColumns[4] {
-                text = "\(arrayOfNewTAuto[row].rounded(toPlaces: 6))"
-                cellIdentifier = CellIdentifiersSelectionTable.NewTCell
             }
+            if arrayOfNewSelectionAuto.count > 0 {
+                if tableColumn == tableView.tableColumns[3] {
+                    text = "\(arrayOfNewSelectionAuto[row].rounded(toPlaces: 6))"
+                    cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
+                } else if tableColumn == tableView.tableColumns[4] {
+                    text = "\(arrayOfNewTAuto[row].rounded(toPlaces: 6))"
+                    cellIdentifier = CellIdentifiersSelectionTable.NewTCell
+                }
+            } else {
+                if tableColumn == tableView.tableColumns[3] {
+                    text = ""
+                    cellIdentifier = CellIdentifiersSelectionTable.NewValueCell
+                } else if tableColumn == tableView.tableColumns[4] {
+                    text = ""
+                    cellIdentifier = CellIdentifiersSelectionTable.NewTCell
+                }
+            }
+                
             
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
                 cell.textField?.stringValue = text
@@ -522,15 +580,22 @@ extension MainViewController: NSTableViewDelegate {
             var text: String = ""
             var cellIdentifier: String = ""
             
-            if tableColumn == tableView.tableColumns[0] {
-                switch row {
-                case 0:
-                    text = "\(linear.a!.rounded(toPlaces: 6))"
-                case 1:
-                    text = "\(linear.b!.rounded(toPlaces: 6))"
-                default: break
+            if arrayOfNewSelection.count > 0 {
+                if tableColumn == tableView.tableColumns[0] {
+                    switch row {
+                    case 0:
+                        text = "\(linear.a!.rounded(toPlaces: 6))"
+                    case 1:
+                        text = "\(linear.b!.rounded(toPlaces: 6))"
+                    default: break
+                    }
+                    cellIdentifier = CellIdentifiersLinearTable.ValueCell
                 }
-                cellIdentifier = CellIdentifiersLinearTable.ValueCell
+            } else {
+                if tableColumn == tableView.tableColumns[0] {
+                    text = ""
+                    cellIdentifier = CellIdentifiersLinearTable.ValueCell
+                }
             }
             
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
@@ -547,15 +612,23 @@ extension MainViewController: NSTableViewDelegate {
             var text: String = ""
             var cellIdentifier: String = ""
             
-            if tableColumn == tableView.tableColumns[0] {
-                switch row {
-                case 0:
-                    text = "\(linear.a!.rounded(toPlaces: 6))"
-                case 1:
-                    text = "\(linear.b!.rounded(toPlaces: 6))"
-                default: break
+            if arrayOfNewSelectionAuto.count > 0 {
+                if tableColumn == tableView.tableColumns[0] {
+                    switch row {
+                    case 0:
+                        text = "\(linear.a!.rounded(toPlaces: 6))"
+                    case 1:
+                        text = "\(linear.b!.rounded(toPlaces: 6))"
+                    default: break
+                    }
+                    cellIdentifier = CellIdentifiersLinearTable.ValueCell
+                    
                 }
-                cellIdentifier = CellIdentifiersLinearTable.ValueCell
+            } else {
+                if tableColumn == tableView.tableColumns[0] {
+                    text = ""
+                    cellIdentifier = CellIdentifiersLinearTable.ValueCell
+                }
             }
             
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {

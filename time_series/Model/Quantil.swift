@@ -48,7 +48,7 @@ class Quantil
         var result: Double
         var up: Double
         
-        up = NormalQuantil(p: p)
+        up = Up
         
         result = up + ((1.0 / v) * StudentG1(up: up)) +
             ((1.0 / pow(v, 2)) * StudentG2(up: up)) +

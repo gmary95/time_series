@@ -23,7 +23,7 @@ class SpearmanTestCalculator {
         var t = 0.0
         let N = Double(selection.count)
         let c = CalcDelta()
-        let sumDelta = SpearmanHelper.sum(c)
+        let sumDelta = SpearmanHelper.sumPow(c)
         let a = 6.0 * sumDelta
         let b = pow(N, 2.0) - 1.0
         t = 1 - (a / (N * b))
@@ -39,21 +39,21 @@ class SpearmanTestCalculator {
         return S
     }
     
-    func makeDecision(alph: Double)-> String {
+    func makeDecision(alph: Double)-> (String, Bool) {
         var str = ""
+        var isHomoskedastic = false
+        let studentQuantil = Quantil.StudentQuantil(p: alph / 2.0, v: Double(selection.count - 2))
         let s = CalcS()
-        if (abs(s) <= Quantil.StudentQuantil(p: alph / 2.0, v: Double(selection.count - 2)))
-        {
-            str = "homoskedastic"
-        }
-        else
-        {
-            if (s > Quantil.StudentQuantil(p: alph / 2.0, v: Double(selection.count - 2))) {
-                str = "heteroskedastic, towards to hight"
-            } else {
+        if s > studentQuantil {
+            str = "heteroskedastic, towards to hight"
+        } else {
+            if s < -studentQuantil {
                 str = "heteroskedastic, towards to decrease"
+            } else {
+                str = "homoskedastic"
+                isHomoskedastic = true
             }
         }
-        return str
+        return (str, isHomoskedastic)
     }
 }

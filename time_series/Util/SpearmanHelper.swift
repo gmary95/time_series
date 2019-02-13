@@ -1,3 +1,5 @@
+import Foundation
+
 class SpearmanHelper {
     
     public enum RankTieMethod {
@@ -12,10 +14,10 @@ class SpearmanHelper {
         return values.sorted { $0 < $1 }
     }
     
-    public static func sum(_ values: [Double]) -> Double {
+    public static func sumPow(_ values: [Double]) -> Double {
         var sum = 0.0
         for i in 0 ..< values.count {
-            sum += values[i]
+            sum += pow(values[i], 2.0)
         }
         return sum
     }

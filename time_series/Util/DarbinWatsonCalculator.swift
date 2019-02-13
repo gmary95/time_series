@@ -52,18 +52,18 @@ class DarbinWatsonCalculator {
         }
     }
     
-    func makeDecision()-> String {
+    func makeDecision()-> (String, Bool) {
         let (dl,du) = chooseDlDu()
         let dw = CalcDW()
         if dw >= du && dw <= (4.0 - du) {
-            return "doesn't have autocorrelation"
+            return ("doesn't have autocorrelation", false)
         }
         if dw >= 0 && dw <= dl {
-            return "autocorrelation > 0"
+            return ("autocorrelation > 0", true)
         }
         if dw >= (4.0 - dl) && dw <= 4 {
-            return "autocorrelation < 0"
+            return ("autocorrelation < 0", true)
         }
-        return "autocorrelation (inf)"
+        return ("autocorrelation (inf)", true)
     }
 }
